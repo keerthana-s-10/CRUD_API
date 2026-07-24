@@ -21,3 +21,6 @@ A simple CRUD REST API built with *FastAPI* as part of my FlyRank AI Backend Int
 
 ## Screenshot
 <img width="1917" height="1078" alt="image" src="https://github.com/user-attachments/assets/1177215a-885b-40db-bfee-2e33e971db56" />
+
+## curl.exe output
+<img width="1277" height="142" alt="image" src="https://github.com/user-attachments/assets/f9e56851-0be3-41d1-a70c-c9fbca0168dd" />
