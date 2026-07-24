@@ -16,7 +16,7 @@ class TaskUpdate(BaseModel):
     done:bool
 
 
-@app.get("/")
+@app.get("/",summary="Get API information")
 def root():
     return {
     "name":"Task API",
@@ -24,11 +24,11 @@ def root():
     "endpoints":["/tasks"]
     }
 
-@app.get("/health")
+@app.get("/health",summary="Check server health")
 def health():
     return {"status":"ok"}
 
-@app.get("/tasks")
+@app.get("/tasks",summary="Get all tasks")
 def get_tasks():
     return tasks
 
@@ -50,7 +50,7 @@ tasks  = [
     }
 ]
 
-@app.get("/tasks/{id}")
+@app.get("/tasks/{id}",summary="Get a task by id")
 def get_task(id:int):
     for task in tasks:
         if task["id"] == id:
@@ -59,7 +59,7 @@ def get_task(id:int):
         status_code=404, 
         detail={"error": f"Task {id} not found"})
 
-@app.post("/tasks", status_code = 201)
+@app.post("/tasks", status_code = 201, summary="Create a new task")
 def create_task (task: TaskCreate):
     if not task.title.strip():
         raise HTTPException(status_code=400,
@@ -74,7 +74,7 @@ def create_task (task: TaskCreate):
     tasks.append(new_task)
     return new_task
 
-@app.put("/tasks/{id}")
+@app.put("/tasks/{id}",summary="Update a task")
 def update_task(id: int, updated_task: TaskUpdate):
     if not updated_task.title.strip():
         raise HTTPException(status_code=400,
@@ -87,7 +87,7 @@ def update_task(id: int, updated_task: TaskUpdate):
 
     raise HTTPException(status_code=404, detail=f"Task {id} not found")
 
-@app.delete("/tasks/{id}",status_code=204)
+@app.delete("/tasks/{id}",status_code=204,summary="Delete a task")
 def delete_task(id:int):
     for index, task in enumerate(tasks):
         if task["id"]==id:
@@ -109,3 +109,13 @@ def get_stats():
     }
 
 tasks = tasks.copy()
+@app.post("/reset")
+def reset():
+
+    global tasks
+
+    tasks = tasks.copy()
+
+    return {
+        "message":"Tasks reset successfully"
+    }
