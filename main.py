@@ -1,9 +1,13 @@
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from database import init_db, get_connection
 
 app = FastAPI()
-
+@app.on_event("startup")
+def startup():
+    init_db()
+    
 class TaskCreate(BaseModel):
     title:str
 
@@ -59,7 +63,7 @@ def get_task(id:int):
 def create_task (task: TaskCreate):
     if not task.title.strip():
         raise HTTPException(status_code=400,
-                            detail = "Ttile cannot be empty")
+                            detail = "Title cannot be empty")
 
     new_task = {
         "id":len(tasks)+1,
@@ -91,3 +95,17 @@ def delete_task(id:int):
             return Response(status_code=204)
 
     raise HTTPException(status_code=404, detail=f"Task {id} not found")
+
+@app.get("/stats", summary="Get task statistics")
+def get_stats():
+    total = len(tasks)
+    done = sum(task["done"] for task in tasks)
+    open_tasks = total - done
+
+    return {
+        "total": total,
+        "done": done,
+        "open": open_tasks
+    }
+
+tasks = tasks.copy()
