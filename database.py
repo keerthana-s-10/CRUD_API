@@ -1,3 +1,9 @@
+import os
+
+DB_NAME = "tasks.db"
+
+print("Database path:", os.path.abspath(DB_NAME))
+
 import sqlite3
 db_name = "tasks.db" 
 
