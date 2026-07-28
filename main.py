@@ -3,23 +3,23 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from database import init_db, get_connection
 
+#variable assigning 
 app = FastAPI()
 
-
+#Database initialization
 @app.on_event("startup")
 def startup():
     init_db()
 
-
+# Pydantic models for requests
 class TaskCreate(BaseModel):
     title: str
-
 
 class TaskUpdate(BaseModel):
     title: str
     done: bool
 
-
+#API info endpoint
 @app.get("/", summary="Get API information")
 def root():
     return {
@@ -28,12 +28,12 @@ def root():
         "endpoints": ["/tasks"]
     }
 
-
+#Server health check endpoint
 @app.get("/health", summary="Check server health")
 def health():
     return {"status": "ok"}
 
-
+#GET tasks endpoint
 @app.get("/tasks")
 def get_tasks():
     conn = get_connection()
@@ -53,7 +53,7 @@ def get_tasks():
         for row in rows
     ]
 
-
+#GET task by id endpoint
 @app.get("/tasks/{id}", summary="Get a task by id")
 def get_task(id: int):
     conn = get_connection()
@@ -76,7 +76,7 @@ def get_task(id: int):
         "done": bool(row["done"])
     }
 
-
+#POST endpoint to create new task
 @app.post("/tasks", status_code=201, summary="Create a new task")
 def create_task(task: TaskCreate):
     if not task.title.strip():
@@ -102,7 +102,7 @@ def create_task(task: TaskCreate):
         "done": False
     }
 
-
+#PUT endpoint to update existing task
 @app.put("/tasks/{id}", summary="Update a task")
 def update_task(id: int, updated_task: TaskUpdate):
     if not updated_task.title.strip():
@@ -129,7 +129,7 @@ def update_task(id: int, updated_task: TaskUpdate):
         "done": updated_task.done
     }
 
-
+#DELETE endpoint to delete a task
 @app.delete("/tasks/{id}", status_code=204, summary="Delete a task")
 def delete_task(id: int):
     conn = get_connection()
@@ -146,7 +146,7 @@ def delete_task(id: int):
 
     return Response(status_code=204)
 
-
+#GET endpoint for task statistics
 @app.get("/stats", summary="Get task statistics")
 def get_stats():
     conn = get_connection()
@@ -166,7 +166,7 @@ def get_stats():
         "open": total - done
     }
 
-
+#POST endpoint to reset tasks
 @app.post("/reset")
 def reset():
     conn = get_connection()
@@ -189,3 +189,49 @@ def reset():
     return {
         "message": "Tasks reset successfully"
     }
+
+#GET endpoint to search tasks by title
+@app.get("/tasks")
+def get_tasks(search: str = None):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    if search:
+        cursor.execute(
+            "SELECT * FROM tasks WHERE title LIKE ?",
+            (f"%{search}%",)
+        )
+    else:
+        cursor.execute("SELECT * FROM tasks")
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    return [
+        {
+            "id": row["id"],
+            "title": row["title"],
+            "done": bool(row["done"])
+        }
+        for row in rows
+    ]
+
+#GET tasks in alphabetical order endpoint
+@app.get("/tasks")
+def get_tasks():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM tasks ORDER BY title")
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    return [
+        {
+            "id": row["id"],
+            "title": row["title"],
+            "done": bool(row["done"])
+        }
+        for row in rows
+    ]
