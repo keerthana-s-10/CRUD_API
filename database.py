@@ -17,21 +17,14 @@ def init_db():
     cursor = conn.cursor()
 
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS tasks (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            done BOOLEAN NOT NULL CHECK (done IN (0, 1))
-        )
+    CREATE TABLE IF NOT EXISTS tasks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        done BOOLEAN NOT NULL CHECK (done IN (0, 1))
+    )
     ''')
-    cursor.execute("SELECT COUNT(*) FROM tasks")
-    count = cursor.fetchone()[0]
 
-    if count == 0:
-     sample_tasks = [("Networks assignment", 0),
-                     ("Project review AI", 1),
-                      ("Prepare for coding exam", 0)]
-
-     cursor.executemany("INSERT INTO tasks (title, done) VALUES (?, ?)", sample_tasks)
-
-    conn.commit()
-    conn.close()
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_tasks_done
+        ON tasks(done)
+    """)
