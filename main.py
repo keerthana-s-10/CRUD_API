@@ -59,7 +59,7 @@ def get_task(id: int):
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM tasks WHERE id = ?", (id,))
+    cursor.execute("SELECT * FROM tasks WHERE id = %s", (id,))
     row = cursor.fetchone()
 
     conn.close()
