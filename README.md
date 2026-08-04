@@ -58,3 +58,51 @@ The API endpoint tests from Assignment 1 continue to pass after migrating from i
 ### Index
 
 An index improves query performance by creating a faster lookup structure for frequently searched columns.
+
+# Task API - FastAPI + PostgreSQL + Docker
+
+A CRUD task management API built with FastAPI and PostgreSQL.
+The application runs completely through Docker Compose with a single command.
+
+## Run the application
+
+1. Copy environment variables:
+
+cp .env.example .env
+
+2. Start the stack:
+
+docker compose up
+
+## Environment Variables
+
+Create a `.env` file using `.env.example`.
+
+| Variable | Description |
+|---|---|
+| DATABASE_URL | PostgreSQL connection string |
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | / | API information |
+| GET | /health | Health check |
+| GET | /tasks | Get all tasks |
+| GET | /tasks/{id} | Get task by id |
+| POST | /tasks | Create task |
+| PUT | /tasks/{id} | Update task |
+| DELETE | /tasks/{id} | Delete task |
+
+## Example Request
+
+curl -i http://localhost:8000/tasks
+
+## Database
+
+PostgreSQL running inside Docker:
+
+## Database
+
+PostgreSQL running inside Docker:
+![psql running](image-1.png)
