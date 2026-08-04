@@ -48,5 +48,13 @@ http://127.0.0.1:8000/docs
 SELECT COUNT(*) FROM tasks;
 Result: Returns the total number of tasks currently stored in the database.
 
-##DB Browser for SQLite Screenshot 
+## DB Browser for SQLite Screenshot 
 ![db_browser_ss](image.png)
+
+### Storage implementation
+
+The API endpoint tests from Assignment 1 continue to pass after migrating from in-memory storage to SQLite. This proves that storage is an implementation detail because the API contract (routes, request formats, responses, and status codes) remains unchanged while only the data layer changed.
+
+### Index
+
+An index improves query performance by creating a faster lookup structure for frequently searched columns.
