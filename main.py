@@ -86,13 +86,17 @@ def create_task(task: TaskCreate):
     cursor = conn.cursor()
 
     cursor.execute(
-        "INSERT INTO tasks (title, done) VALUES (?, ?)",
-        (task.title, 0)
+    """
+    INSERT INTO tasks (title, done)
+    VALUES (%s, %s)
+    RETURNING id
+    """,
+    (task.title, False)
     )
 
-    conn.commit()
+    new_id = cursor.fetchone()["id"]
 
-    new_id = cursor.lastrowid
+    conn.commit()
 
     conn.close()
 
@@ -112,8 +116,12 @@ def update_task(id: int, updated_task: TaskUpdate):
     cursor = conn.cursor()
 
     cursor.execute(
-        "UPDATE tasks SET title = ?, done = ? WHERE id = ?",
-        (updated_task.title, int(updated_task.done), id)
+    """
+    UPDATE tasks
+    SET title = %s, done = %s
+    WHERE id = %s
+    """,
+    (updated_task.title, updated_task.done, id)
     )
 
     if cursor.rowcount == 0:
@@ -135,7 +143,10 @@ def delete_task(id: int):
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("DELETE FROM tasks WHERE id = ?", (id,))
+    cursor.execute(
+    "DELETE FROM tasks WHERE id = %s",
+    (id,)
+    )
 
     if cursor.rowcount == 0:
         conn.close()
