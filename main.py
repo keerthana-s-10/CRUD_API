@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Response, Header
+from fastapi import FastAPI, HTTPException, Response, Header, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from database import init_db, get_connection
@@ -32,6 +32,105 @@ class TaskUpdate(BaseModel):
 class AuthRequest(BaseModel):
     email: str
     password: str
+
+
+# Reusable authentication guard
+def get_current_user(authorization: str = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=401,
+            detail="Access token required"
+        )
+
+    token = authorization.split(" ", 1)[1]
+
+    if not token:
+        raise HTTPException(
+            status_code=401,
+            detail="Access token required"
+        )
+
+    try:
+        response = supabase.auth.get_user(token)
+        return response.user
+
+    except Exception:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or expired token"
+        )
+
+
+@app.post("/auth/signup", status_code=201)
+def signup(credentials: AuthRequest):
+    if not credentials.email or not credentials.password:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "Email and password are required"}
+        )
+
+    try:
+        response = supabase.auth.sign_up({
+            "email": credentials.email,
+            "password": credentials.password
+        })
+
+        return response.user
+
+    except Exception:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "Signup failed"}
+        )
+
+
+@app.post("/auth/login")
+def login(credentials: AuthRequest):
+    if not credentials.email or not credentials.password:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "Email and password are required"}
+        )
+
+    try:
+        response = supabase.auth.sign_in_with_password({
+            "email": credentials.email,
+            "password": credentials.password
+        })
+
+        return {
+            "access_token": response.session.access_token,
+            "refresh_token": response.session.refresh_token
+        }
+
+    except Exception:
+        return JSONResponse(
+            status_code=401,
+            content={"error": "Invalid login credentials"}
+        )
+
+
+@app.post("/auth/logout", status_code=204)
+def logout(user=Depends(get_current_user)):
+    supabase.auth.sign_out()
+    return Response(status_code=204)
+
+
+@app.get("/protected/profile")
+def protected_profile(user=Depends(get_current_user)):
+    return {
+        "id": user.id,
+        "email": user.email,
+        "created_at": user.created_at
+    }
+
+
+@app.get("/protected/dashboard")
+def protected_dashboard(user=Depends(get_current_user)):
+    return {
+        "message": "Welcome to your dashboard",
+        "user_id": user.id
+    }
 
 @app.post("/auth/signup", status_code=201)
 def signup(credentials: AuthRequest):
