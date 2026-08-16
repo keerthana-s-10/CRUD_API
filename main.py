@@ -307,3 +307,33 @@ def get_tasks():
         }
         for row in rows
     ]
+
+# Public endpoint
+@app.get("/public/info")
+def public_info():
+    return {
+        "message": "Welcome stranger! This info is public."
+    }
+
+
+# Protected endpoint - token presence only
+@app.get("/protected/profile")
+def protected_profile(authorization: str = None):
+    if not authorization or not authorization.startswith("Bearer "):
+        return JSONResponse(
+            status_code=401,
+            content={"error": "Access token required"}
+        )
+
+    token = authorization.split(" ", 1)[1]
+
+    if not token:
+        return JSONResponse(
+            status_code=401,
+            content={"error": "Access token required"}
+        )
+
+    return {
+        "message": "Protected profile",
+        "token": token
+    }
